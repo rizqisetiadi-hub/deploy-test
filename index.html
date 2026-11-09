@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy test</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a20;
+    --border: #2a2f38;
+    --text: #e6e8eb;
+    --muted: #9aa3af;
+    --ok: #3fae7f;
+    --warn: #e0a33e;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --border: #e2e2dd;
+      --text: #1d1f23;
+      --muted: #6b7280;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px 20px;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  main { width: 100%; max-width: 560px; }
+  .eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 20px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  h1 { font-size: 30px; line-height: 1.2; font-weight: 600; margin: 0 0 10px; letter-spacing: -.02em; }
+  p.lead { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+  }
+  .card-head h2 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: .02em; }
+  button {
+    font: inherit; font-size: 13px;
+    padding: 6px 14px; border-radius: 7px; cursor: pointer;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  button:hover { border-color: var(--muted); background: rgba(127,127,127,.06); }
+  ul { list-style: none; margin: 0; padding: 6px 0; }
+  li {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 11px 18px; font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  li:last-child { border-bottom: none; }
+  li .mark { width: 14px; flex: none; font-size: 13px; color: var(--muted); }
+  li .label { flex: 1; }
+  li .value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+    max-width: 55%; text-align: right; word-break: break-all;
+  }
+  li.pass .mark { color: var(--ok); }
+  li.warn .mark { color: var(--warn); }
+  footer { margin-top: 22px; font-size: 12.5px; color: var(--muted); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow"><span class="dot"></span>deploy test</div>
+  <h1>If you can read this, the flow works.</h1>
+  <p class="lead">This page is the subject of the test: it was written locally, committed to Git, and served over HTTP. Run the checks to see where it is actually running from.</p>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Environment checks</h2>
+      <button id="run" type="button">Run checks</button>
+    </div>
+    <ul id="results">
+      <li><span class="mark">·</span><span class="label">Waiting to run</span><span class="value">—</span></li>
+    </ul>
+  </div>
+
+  <footer>
+    Plain HTML, CSS and JS — no build step, no dependencies, nothing to install.
+  </footer>
+</main>
+
+<script>
+const checks = [
+  {
+    label: "JavaScript",
+    run: () => ({ state: "pass", value: "executing" })
+  },
+  {
+    label: "Protocol",
+    run: () => location.protocol === "file:"
+      ? { state: "warn", value: "file:// (local only)" }
+      : { state: "pass", value: location.protocol.replace(":", "") + "://" }
+  },
+  {
+    label: "Host",
+    run: () => ({ state: "pass", value: location.host || "localhost (no server)" })
+  },
+  {
+    label: "Viewport",
+    run: () => ({ state: "pass", value: innerWidth + " × " + innerHeight })
+  },
+  {
+    label: "Stylesheet",
+    run: () => {
+      const bg = getComputedStyle(document.body).backgroundColor;
+      return bg === "rgba(0, 0, 0, 0)" || !bg
+        ? { state: "warn", value: "not applied" }
+        : { state: "pass", value: "applied" };
+    }
+  }
+];
+
+function render() {
+  const list = document.getElementById("results");
+  list.innerHTML = "";
+  for (const check of checks) {
+    const r = check.run();
+    const li = document.createElement("li");
+    li.className = r.state;
+    li.innerHTML =
+      '<span class="mark">' + (r.state === "pass" ? "✓" : "!") + "</span>" +
+      '<span class="label"></span>' +
+      '<span class="value"></span>';
+    li.querySelector(".label").textContent = check.label;
+    li.querySelector(".value").textContent = r.value;
+    list.appendChild(li);
+  }
+}
+
+document.getElementById("run").addEventListener("click", render);
+render();
+</script>
+</body>
+</html>

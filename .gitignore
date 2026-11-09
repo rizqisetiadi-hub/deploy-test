@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Secrets — never commit these
+.env
+.env.*
+*.pem
+*.key
+
+# Tooling / session data
+.workbuddy/
+.vscode/
+*.log
